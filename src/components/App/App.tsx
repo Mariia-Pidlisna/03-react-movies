@@ -22,7 +22,7 @@ export default function App() {
     setSelectedMovie(null);
   };
 
-  const handelSearch = async (newQuery: string) => {
+  const handelSearch = async (newQuery: string): Promise<void> => {
     setMoviesSet([]);
     setSelectedMovie(null);
     setLoading(true);
@@ -46,7 +46,7 @@ export default function App() {
   return (
     <>
       <Toaster />
-      <SearchBar onSubmit={handelSearch} onClear={() => setMoviesSet([])} />
+      <SearchBar onSubmit={handelSearch} />
       {loading && <Loader />}
       {error && <ErrorMessage />}
       {!loading && !error && moviesSet.length > 0 && (
