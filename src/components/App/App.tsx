@@ -24,6 +24,7 @@ export default function App() {
 
   const handelSearch = async (newQuery: string) => {
     setMoviesSet([]);
+    setSelectedMovie(null);
     setLoading(true);
     setError(false);
     try {
