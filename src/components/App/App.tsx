@@ -1,0 +1,75 @@
+import axios from "axios";
+import SearchBar from "../SearchBar/SearchBar";
+import "./App.module.css";
+import type { Movie } from "../../types/movie";
+import { useState } from "react";
+import MovieGrid from "../MovieGrid/MovieGrid";
+import toast, { Toaster } from "react-hot-toast";
+import Loader from "../Loader/Loader";
+import ErrorMessage from "../ErrorMessage/ErrorMessage";
+import MovieModal from "../MovieModal/MovieModal";
+
+interface GetMoviesResponse {
+  results: Movie[];
+}
+
+export default function App() {
+  const [moviesSet, setMoviesSet] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+
+  const handleSelectMovie = (movie: Movie) => {
+    setSelectedMovie(movie);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedMovie(null);
+  };
+
+  const handelSearch = async (newQuery: string) => {
+    setMoviesSet([]);
+    setLoading(true);
+    setError(false);
+    try {
+      const response = await axios.get<GetMoviesResponse>(
+        `https://api.themoviedb.org/3/search/movie?query=${newQuery}`,
+        {
+          params: {
+            query: newQuery,
+          },
+          headers: {
+            Authorization: `Bearer ${import.meta.env.VITE_TMDB_TOKEN}`,
+          },
+        }
+      );
+
+      if (response.data.results.length === 0) {
+        toast.error("No movies found for your request.");
+      }
+
+      setMoviesSet(response.data.results);
+    } catch {
+      setError(true);
+      toast.error("Failed to fetch movies.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Toaster />
+      <SearchBar onSubmit={handelSearch} />
+      {loading && <Loader />}
+      {error && <ErrorMessage />}
+      {!loading && !error && moviesSet.length > 0 && (
+        <MovieGrid movies={moviesSet} onSelect={handleSelectMovie} />
+      )}
+
+      {selectedMovie && (
+        <MovieModal movie={selectedMovie} onClose={handleCloseModal} />
+      )}
+    </>
+  );
+}
