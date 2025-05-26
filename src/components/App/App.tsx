@@ -1,17 +1,12 @@
-import axios from "axios";
-import SearchBar from "../SearchBar/SearchBar";
-import "./App.module.css";
-import type { Movie } from "../../types/movie";
 import { useState } from "react";
-import MovieGrid from "../MovieGrid/MovieGrid";
 import toast, { Toaster } from "react-hot-toast";
+import SearchBar from "../SearchBar/SearchBar";
+import MovieGrid from "../MovieGrid/MovieGrid";
 import Loader from "../Loader/Loader";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
 import MovieModal from "../MovieModal/MovieModal";
-
-interface GetMoviesResponse {
-  results: Movie[];
-}
+import type { Movie } from "../../types/movie";
+import { fetchMovies } from "../../services/movieService";
 
 export default function App() {
   const [moviesSet, setMoviesSet] = useState<Movie[]>([]);
@@ -32,23 +27,13 @@ export default function App() {
     setLoading(true);
     setError(false);
     try {
-      const response = await axios.get<GetMoviesResponse>(
-        `https://api.themoviedb.org/3/search/movie?query=${newQuery}`,
-        {
-          params: {
-            query: newQuery,
-          },
-          headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_TMDB_TOKEN}`,
-          },
-        }
-      );
+      const movies = await fetchMovies(newQuery);
 
-      if (response.data.results.length === 0) {
+      if (movies.length === 0) {
         toast.error("No movies found for your request.");
       }
 
-      setMoviesSet(response.data.results);
+      setMoviesSet(movies);
     } catch {
       setError(true);
       toast.error("Failed to fetch movies.");
@@ -66,7 +51,6 @@ export default function App() {
       {!loading && !error && moviesSet.length > 0 && (
         <MovieGrid movies={moviesSet} onSelect={handleSelectMovie} />
       )}
-
       {selectedMovie && (
         <MovieModal movie={selectedMovie} onClose={handleCloseModal} />
       )}
