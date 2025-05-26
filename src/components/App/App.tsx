@@ -45,7 +45,7 @@ export default function App() {
   return (
     <>
       <Toaster />
-      <SearchBar onSubmit={handelSearch} />
+      <SearchBar onSubmit={handelSearch} onClear={() => setMoviesSet([])} />
       {loading && <Loader />}
       {error && <ErrorMessage />}
       {!loading && !error && moviesSet.length > 0 && (
